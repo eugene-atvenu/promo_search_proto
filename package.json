@@ -1,0 +1,21 @@
+{
+  "name": "promo_search_proto",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "example": "npx tsx examples/usage.ts",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
+    "typescript": "^6.0.3"
+  }
+}
