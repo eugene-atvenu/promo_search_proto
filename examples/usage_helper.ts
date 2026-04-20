@@ -23,17 +23,16 @@ const promos: Promo[] = [
   },
 ]
 
-// Build the index once, reuse the search function across requests
+// Build the index once — reuse across requests without re-indexing
 const search = buildSearch(promos)
 
-const carts: CartItem[][] = [
-  [{ sku: "tee-md", price: 2500, qty: 1 }, { sku: "hat-one", price: 1800, qty: 1 }],
-  [{ sku: "tee-md", price: 2500, qty: 3 }],
+const cart: CartItem[] = [
+  { sku: "tee-md", price: 2500, qty: 1 },
+  { sku: "hat-one", price: 1800, qty: 1 },
 ]
 
-for (const cart of carts) {
-  console.log("--- cart ---")
-  for (const { promo, status, progress, gap } of search(cart)) {
-    console.log(`[${status}] ${promo.label} — ${Math.round(progress * 100)}% there, $${(gap / 100).toFixed(2)} to go`)
-  }
+const results = search(cart)
+
+for (const { promo, status, progress, gap } of results) {
+  console.log(`[${status}] ${promo.label} — ${Math.round(progress * 100)}% there, $${(gap / 100).toFixed(2)} to go`)
 }
