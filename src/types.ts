@@ -2,6 +2,7 @@ export const TRIGGER_CART_SPEND = "cart_spend" as const
 export const TRIGGER_ITEM_SPEND = "item_spend" as const
 export const THRESHOLD_AMOUNT = "amount" as const
 export const THRESHOLD_PERCENT = "percent" as const
+export const THRESHOLD_QUANTITY = "quantity" as const
 export const REWARD_AMOUNT_OFF = "amount_off" as const
 export const REWARD_PERCENT_OFF = "percent_off" as const
 export const TARGET_CART = "cart" as const
@@ -10,8 +11,9 @@ export const TARGET_CHEAPEST = "cheapest" as const
 export const TARGET_MOST_EXPENSIVE = "most_expensive" as const
 
 export type Threshold =
-  | { type: typeof THRESHOLD_AMOUNT; value: number } // cents
-  | { type: typeof THRESHOLD_PERCENT; value: number }; // 0-100, percent of cart total
+  | { type: typeof THRESHOLD_AMOUNT; value: number }
+  | { type: typeof THRESHOLD_PERCENT; value: number }
+  | { type: typeof THRESHOLD_QUANTITY; value: number };
 
 export type Trigger =
   | { type: typeof TRIGGER_CART_SPEND; threshold: Threshold }

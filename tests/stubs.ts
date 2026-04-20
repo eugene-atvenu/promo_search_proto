@@ -4,11 +4,12 @@ import {
   REWARD_PERCENT_OFF,
   THRESHOLD_AMOUNT,
   THRESHOLD_PERCENT,
+  THRESHOLD_QUANTITY,
   TRIGGER_CART_SPEND,
   TRIGGER_ITEM_SPEND,
 } from "../src/index.js"
 
-type ThresholdType = typeof THRESHOLD_AMOUNT | typeof THRESHOLD_PERCENT
+type ThresholdType = typeof THRESHOLD_AMOUNT | typeof THRESHOLD_PERCENT | typeof THRESHOLD_QUANTITY
 type RewardType = typeof REWARD_AMOUNT_OFF | typeof REWARD_PERCENT_OFF
 
 const makeReward = (type: RewardType, value: number): Reward =>

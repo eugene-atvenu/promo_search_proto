@@ -1,6 +1,6 @@
 import { buildIndex } from "../src/indexer.js"
 import { cartTotal, evaluateThreshold, evaluatePromo, searchPromos } from "../src/search.js"
-import { THRESHOLD_AMOUNT, THRESHOLD_PERCENT } from "../src/types.js"
+import { THRESHOLD_AMOUNT, THRESHOLD_PERCENT, THRESHOLD_QUANTITY } from "../src/types.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
 
 describe("cartTotal", () => {
@@ -26,6 +26,10 @@ describe("evaluateThreshold", () => {
 
   it("returns percent of cart total for percent threshold", () => {
     expect(evaluateThreshold({ type: THRESHOLD_PERCENT, value: 50 }, cart)).toBe(1000)
+  })
+
+  it("returns trigger value for quantity threshold", () => {
+    expect(evaluateThreshold({ type: THRESHOLD_QUANTITY, value: 3 }, cart)).toBe(3)
   })
 })
 
@@ -75,6 +79,39 @@ describe("evaluatePromo", () => {
     const result = evaluatePromo(cartPromo("p1", 5000), cart)
     expect(result.progress).toBe(1)
     expect(result.gap).toBe(0)
+  })
+
+  describe("quantity threshold", () => {
+    const qtyPromo = (id: string, skus: string[], qty: number) =>
+      itemPromo(id, skus, qty, THRESHOLD_QUANTITY)
+
+    it("counts qualifying item qty, not spend", () => {
+      const cart = [cartItem("hat", 1800, 1)]
+      const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
+      expect(result.progress).toBe(0.5)
+      expect(result.gap).toBe(1)
+      expect(result.status).toBe("silent")
+    })
+
+    it("status is reached when qty meets threshold", () => {
+      const cart = [cartItem("hat", 1800, 2)]
+      const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
+      expect(result.progress).toBe(1)
+      expect(result.gap).toBe(0)
+      expect(result.status).toBe("reached")
+    })
+
+    it("only counts SKUs matching the trigger", () => {
+      const cart = [cartItem("hat", 1800, 2), cartItem("tee", 2500, 3)]
+      const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
+      expect(result.progress).toBe(1)
+    })
+
+    it("sums qty across multiple cart rows for the same SKU", () => {
+      const cart = [cartItem("hat", 1800, 1), cartItem("hat", 1800, 1)]
+      const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
+      expect(result.progress).toBe(1)
+    })
   })
 })
 

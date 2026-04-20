@@ -3,6 +3,7 @@ import {
   TRIGGER_CART_SPEND,
   TRIGGER_ITEM_SPEND,
   THRESHOLD_AMOUNT,
+  THRESHOLD_QUANTITY,
 } from "./types.js";
 import type { Promo, Threshold, Trigger } from "./types.js";
 
@@ -29,11 +30,14 @@ export const cartTotal = (cartItems: CartItem[]): number =>
 const qualifyingTotal = (cart: CartItem[], skus: string[]): number =>
   cartTotal(cart.filter((item) => skus.includes(item.sku)));
 
+const qualifyingQty = (cart: CartItem[], skus: string[]): number =>
+  cart.filter((item) => skus.includes(item.sku)).reduce((sum, item) => sum + item.qty, 0);
+
 export const evaluateThreshold = (
   trigger: Threshold,
   cartItems: CartItem[],
 ): number =>
-  trigger.type === THRESHOLD_AMOUNT
+  trigger.type === THRESHOLD_AMOUNT || trigger.type === THRESHOLD_QUANTITY
     ? trigger.value
     : cartTotal(cartItems) * (trigger.value / 100);
 
@@ -41,18 +45,15 @@ export const evaluatePromo = (
   promo: Promo,
   cartItems: CartItem[],
 ): PromoResult => {
-  const total =
-    promo.trigger.type === TRIGGER_CART_SPEND
-      ? cartTotal(cartItems)
-      : qualifyingTotal(
-          cartItems,
-          (
-            promo.trigger as Extract<
-              Trigger,
-              { type: typeof TRIGGER_ITEM_SPEND }
-            >
-          ).skus,
-        );
+  let total: number;
+  if (promo.trigger.type === TRIGGER_CART_SPEND) {
+    total = cartTotal(cartItems);
+  } else {
+    const skus = (promo.trigger as Extract<Trigger, { type: typeof TRIGGER_ITEM_SPEND }>).skus;
+    total = promo.trigger.threshold.type === THRESHOLD_QUANTITY
+      ? qualifyingQty(cartItems, skus)
+      : qualifyingTotal(cartItems, skus);
+  }
 
   const threshold = evaluateThreshold(promo.trigger.threshold, cartItems);
   const progress = Math.min(total / threshold, 1);
