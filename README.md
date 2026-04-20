@@ -7,6 +7,7 @@ Prototype for promo search and evaluation logic.
 - `src/types.ts` — shared types and constants (`Promo`, `Trigger`, `Reward`, etc.)
 - `src/indexer.ts` — builds a lookup index from a list of promos
 - `src/search.ts` — evaluates promos against a cart (`searchPromos`, `evaluatePromo`)
+- `src/helper.ts` — `buildSearch(promos)` convenience wrapper; builds the index once and returns a reusable search function
 - `src/index.ts` — re-exports everything
 
 ## Scripts
@@ -23,6 +24,14 @@ See [`examples/usage.ts`](examples/usage.ts) for a full working example, or run 
 ```
 npm run example
 ```
+
+For the `buildSearch` helper pattern (build index once, call repeatedly):
+
+```
+npm run example:helper
+```
+
+See [`examples/usage_helper.ts`](examples/usage_helper.ts).
 
 ### PromoResult fields
 

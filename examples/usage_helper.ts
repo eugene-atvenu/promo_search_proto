@@ -1,5 +1,5 @@
-import type { CartItem, Promo } from "../src/index.js"
-import { buildIndex, searchPromos } from "../src/index.js"
+import { buildSearch } from "../src/index.js"
+import type { Promo, CartItem } from "../src/index.js"
 
 const promos: Promo[] = [
   {
@@ -23,15 +23,17 @@ const promos: Promo[] = [
   },
 ]
 
-const index = buildIndex(promos)
+// Build the index once, reuse the search function across requests
+const search = buildSearch(promos)
 
-const cart: CartItem[] = [
-  { sku: "tee-md", price: 2500, qty: 1 },
-  { sku: "hat-one", price: 1800, qty: 1 },
+const carts: CartItem[][] = [
+  [{ sku: "tee-md", price: 2500, qty: 1 }, { sku: "hat-one", price: 1800, qty: 1 }],
+  [{ sku: "tee-md", price: 2500, qty: 3 }],
 ]
 
-const results = searchPromos(cart, index)
-
-for (const { promo, status, progress, gap } of results) {
-  console.log(`[${status}] ${promo.label} — ${Math.round(progress * 100)}% there, $${(gap / 100).toFixed(2)} to go`)
+for (const cart of carts) {
+  console.log("--- cart ---")
+  for (const { promo, status, progress, gap } of search(cart)) {
+    console.log(`[${status}] ${promo.label} — ${Math.round(progress * 100)}% there, $${(gap / 100).toFixed(2)} to go`)
+  }
 }

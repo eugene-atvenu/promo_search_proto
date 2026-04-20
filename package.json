@@ -2,10 +2,11 @@
   "name": "promo_search_proto",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "example": "npx tsx examples/usage.ts",
+    "example:helper": "npx tsx examples/usage_helper.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
   },
   "keywords": [],

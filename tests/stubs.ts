@@ -1,13 +1,12 @@
+import type { CartItem, Promo, Reward } from "../src/index.js"
 import {
-  TRIGGER_CART_SPEND,
-  TRIGGER_ITEM_SPEND,
-  THRESHOLD_AMOUNT,
-  THRESHOLD_PERCENT,
   REWARD_AMOUNT_OFF,
   REWARD_PERCENT_OFF,
-} from "../src/types.js"
-import type { Promo, Reward } from "../src/types.js"
-import type { CartItem } from "../src/search.js"
+  THRESHOLD_AMOUNT,
+  THRESHOLD_PERCENT,
+  TRIGGER_CART_SPEND,
+  TRIGGER_ITEM_SPEND,
+} from "../src/index.js"
 
 type ThresholdType = typeof THRESHOLD_AMOUNT | typeof THRESHOLD_PERCENT
 type RewardType = typeof REWARD_AMOUNT_OFF | typeof REWARD_PERCENT_OFF
