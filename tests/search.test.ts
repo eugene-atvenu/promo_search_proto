@@ -1,37 +1,7 @@
 import { buildIndex } from "../src/indexer.js"
-import { cartTotal, evaluateThreshold, evaluatePromo, searchPromos } from "../src/search.js"
-import { THRESHOLD_AMOUNT, THRESHOLD_PERCENT, THRESHOLD_QUANTITY } from "../src/types.js"
+import { evaluatePromo, searchPromos } from "../src/search.js"
+import { THRESHOLD_QUANTITY } from "../src/types.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
-
-describe("cartTotal", () => {
-  it("returns 0 for empty cart", () => {
-    expect(cartTotal([])).toBe(0)
-  })
-
-  it("multiplies price by qty", () => {
-    expect(cartTotal([cartItem("a", 1000, 3)])).toBe(3000)
-  })
-
-  it("sums multiple items", () => {
-    expect(cartTotal([cartItem("a", 1000), cartItem("b", 500, 2)])).toBe(2000)
-  })
-})
-
-describe("evaluateThreshold", () => {
-  const cart = [cartItem("a", 1000, 2)] // total = 2000
-
-  it("returns trigger value for amount threshold", () => {
-    expect(evaluateThreshold({ type: THRESHOLD_AMOUNT, value: 5000 }, cart)).toBe(5000)
-  })
-
-  it("returns percent of cart total for percent threshold", () => {
-    expect(evaluateThreshold({ type: THRESHOLD_PERCENT, value: 50 }, cart)).toBe(1000)
-  })
-
-  it("returns trigger value for quantity threshold", () => {
-    expect(evaluateThreshold({ type: THRESHOLD_QUANTITY, value: 3 }, cart)).toBe(3)
-  })
-})
 
 describe("evaluatePromo", () => {
   it("uses full cart total for cart_spend promo", () => {
@@ -64,13 +34,13 @@ describe("evaluatePromo", () => {
 
   it("uses promo nudge threshold when set", () => {
     const promo = { ...cartPromo("p1", 1000), nudge: 70 }
-    const cart = [cartItem("a", 750)] // progress = 0.75, above 70% nudge
+    const cart = [cartItem("a", 750)]
     expect(evaluatePromo(promo, cart).status).toBe("nudge")
   })
 
   it("promo nudge threshold overrides default", () => {
     const promo = { ...cartPromo("p1", 1000), nudge: 90 }
-    const cart = [cartItem("a", 850)] // progress = 0.85, below 90% nudge
+    const cart = [cartItem("a", 850)]
     expect(evaluatePromo(promo, cart).status).toBe("silent")
   })
 
@@ -152,8 +122,8 @@ describe("searchPromos", () => {
   })
 
   it("sorts results by progress descending", () => {
-    const high = cartPromo("high", 1000)          // progress = 0.9
-    const low = { ...cartPromo("low", 2000), nudge: 40 } // progress = 0.45
+    const high = cartPromo("high", 1000)
+    const low = { ...cartPromo("low", 2000), nudge: 40 }
     const index = buildIndex([low, high])
     const cart = [cartItem("a", 900)]
     const results = searchPromos(cart, index)

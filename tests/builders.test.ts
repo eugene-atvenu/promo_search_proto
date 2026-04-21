@@ -1,4 +1,4 @@
-import { buildSearch } from "../src/helper.js"
+import { buildSearch } from "../src/builders.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
 
 describe("buildSearch", () => {

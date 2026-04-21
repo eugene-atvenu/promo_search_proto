@@ -1,5 +1,6 @@
 import { TRIGGER_ITEM_SPEND } from "./types.js"
 import type { Promo } from "./types.js"
+import { getOrCreate } from "./indexer.helpers.js"
 
 export type PromoIndex = {
   promoMap: Map<string, Promo>
@@ -25,13 +26,4 @@ export const buildIndex = (promos: Promo[]): PromoIndex => {
   }
 
   return { promoMap, itemIndex, cartSpend }
-}
-
-export const getOrCreate = (map: Map<string, Set<string>>, key: string): Set<string> => {
-  let set = map.get(key)
-  if (!set) {
-    set = new Set()
-    map.set(key, set)
-  }
-  return set
 }
