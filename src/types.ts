@@ -49,4 +49,14 @@ export type PromoResult = {
   gap: number;
 };
 
-export type SortAlgorithm = "max_gap" | "min_gap" | "random" | "weighted";
+export const SORT_MAX_GAP = "max_gap" as const
+export const SORT_MIN_GAP = "min_gap" as const
+export const SORT_RANDOM = "random" as const
+export const SORT_WEIGHTED = "weighted" as const
+
+export type SortAlgorithm = typeof SORT_MAX_GAP | typeof SORT_MIN_GAP | typeof SORT_RANDOM | typeof SORT_WEIGHTED;
+
+export type PromoGroups = {
+  reached: PromoResult[];
+  nudge: PromoResult[];
+};

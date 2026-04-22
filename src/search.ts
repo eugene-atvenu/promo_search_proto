@@ -1,6 +1,6 @@
 import type { PromoIndex } from "./indexer.js"
-import { TRIGGER_CART_SPEND, TRIGGER_ITEM_SPEND, THRESHOLD_QUANTITY } from "./types.js"
-import type { Promo, Trigger, CartItem, PromoStatus, PromoResult } from "./types.js"
+import { TRIGGER_CART_SPEND, THRESHOLD_QUANTITY } from "./types.js"
+import type { Promo, CartItem, PromoStatus, PromoResult } from "./types.js"
 import { cartTotal, qualifyingTotal, qualifyingQty, evaluateThreshold } from "./search.helpers.js"
 
 export { cartTotal, evaluateThreshold }
@@ -12,8 +12,8 @@ export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult 
   if (promo.trigger.type === TRIGGER_CART_SPEND) {
     total = cartTotal(cartItems)
   } else {
-    const skus = (promo.trigger as Extract<Trigger, { type: typeof TRIGGER_ITEM_SPEND }>).skus
-    total = promo.trigger.threshold.type === THRESHOLD_QUANTITY
+    const { skus, threshold } = promo.trigger
+    total = threshold.type === THRESHOLD_QUANTITY
       ? qualifyingQty(cartItems, skus)
       : qualifyingTotal(cartItems, skus)
   }
@@ -36,9 +36,9 @@ export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult 
 }
 
 export const searchPromos = (cartItems: CartItem[], index: PromoIndex): PromoResult[] => {
-  const fromItems = cartItems.flatMap((item: CartItem) => [
-    ...(index.itemIndex.get(item.sku) ?? []),
-  ])
+  const fromItems = cartItems.flatMap(item =>
+    Array.from(index.itemIndex.get(item.sku) ?? [])
+  )
   const matched = new Set([...index.cartSpend, ...fromItems])
 
   return [...matched]

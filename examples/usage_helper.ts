@@ -1,6 +1,6 @@
 import {
-  buildPromoSorter,
-  buildSearch,
+  buildPromoSearch,
+  SORT_WEIGHTED,
   REWARD_COST_OFF,
   REWARD_PERCENT_OFF,
   TARGET_CART,
@@ -11,7 +11,7 @@ import {
   TRIGGER_CART_SPEND,
   TRIGGER_ITEM_SPEND,
 } from "../src/index.js"
-import type { CartItem, Promo } from "../src/index.js"
+import type { CartItem, Promo, PromoResult } from "../src/index.js"
 
 const promos: Promo[] = [
   {
@@ -53,8 +53,7 @@ const promos: Promo[] = [
   },
 ]
 
-// Build the index once — reuse across requests without re-indexing
-const search = buildSearch(promos)
+const search = buildPromoSearch(promos, SORT_WEIGHTED)
 
 const cart: CartItem[] = [
   { sku: "tee-md", price: 2500, qty: 1 },
@@ -62,18 +61,17 @@ const cart: CartItem[] = [
   { sku: "poster-one", price: 1200, qty: 2 },
 ]
 
-const results = search(cart)
+const { reached, nudge } = search(cart)
 
-// Sort by weight — higher weight promos appear first regardless of progress
-const sortByWeight = buildPromoSorter("weighted")
-const sorted = sortByWeight(results)
-
-const printResult = ({ promo, status, progress, gap }: typeof sorted[0]) => {
+const printResult = ({ promo, progress, gap }: PromoResult) => {
   const gapLabel = promo.trigger.threshold.type === THRESHOLD_QUANTITY
     ? `${gap} item${gap === 1 ? "" : "s"} to go`
     : `$${(gap / 100).toFixed(2)} to go`
-  console.log(`[${status}] (weight: ${promo.weight}) ${promo.label} — ${Math.round(progress * 100)}% there, ${gapLabel}`)
+  console.log(`  (weight: ${promo.weight ?? 0}) ${promo.label} — ${Math.round(progress * 100)}% there, ${gapLabel}`)
 }
 
-console.log("=== sorted by weight ===")
-sorted.forEach(printResult)
+console.log("=== reached ===")
+reached.forEach(printResult)
+
+console.log("\n=== nudge ===")
+nudge.forEach(printResult)

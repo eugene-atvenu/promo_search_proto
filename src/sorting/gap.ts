@@ -9,9 +9,14 @@ export const costGap = (result: PromoResult, cartItems: CartItem[]): number => {
   if (promo.trigger.threshold.type !== THRESHOLD_QUANTITY) return gap
 
   const { skus } = promo.trigger
-  const matching = cartItems.filter((item) => skus.includes(item.sku))
-  const totalSpend = matching.reduce((s, i) => s + i.price * i.qty, 0)
-  const totalQty = matching.reduce((s, i) => s + i.qty, 0)
+  let totalSpend = 0
+  let totalQty = 0
+  for (const item of cartItems) {
+    if (skus.includes(item.sku)) {
+      totalSpend += item.price * item.qty
+      totalQty += item.qty
+    }
+  }
 
   return totalQty > 0 ? gap * (totalSpend / totalQty) : gap
 }

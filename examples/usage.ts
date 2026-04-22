@@ -2,6 +2,11 @@ import type { CartItem, Promo, PromoResult } from "../src/index.js"
 import {
   buildIndex,
   buildPromoSorter,
+  groupPromos,
+  SORT_MAX_GAP,
+  SORT_MIN_GAP,
+  SORT_RANDOM,
+  SORT_WEIGHTED,
   REWARD_COST_OFF,
   REWARD_PERCENT_OFF,
   searchPromos,
@@ -72,13 +77,20 @@ const printResult = ({ promo, status, progress, gap }: PromoResult) => {
 }
 
 console.log("=== min gap — closest to triggering first ===")
-buildPromoSorter("min_gap", cart)(results).forEach(printResult)
+buildPromoSorter(SORT_MIN_GAP, cart)(results).forEach(printResult)
 
 console.log("\n=== max gap — furthest from triggering first ===")
-buildPromoSorter("max_gap", cart)(results).forEach(printResult)
+buildPromoSorter(SORT_MAX_GAP, cart)(results).forEach(printResult)
 
 console.log("\n=== weighted — higher weight first ===")
-buildPromoSorter("weighted")(results).forEach(printResult)
+buildPromoSorter(SORT_WEIGHTED)(results).forEach(printResult)
 
 console.log("\n=== random — shuffled ===")
-buildPromoSorter("random")(results).forEach(printResult)
+buildPromoSorter(SORT_RANDOM)(results).forEach(printResult)
+
+console.log("\n=== grouped by status (sorted by min gap within each group) ===")
+const { reached, nudge } = groupPromos(buildPromoSorter(SORT_MIN_GAP, cart)(results))
+console.log("  -- reached --")
+reached.forEach(printResult)
+console.log("  -- nudge --")
+nudge.forEach(printResult)
