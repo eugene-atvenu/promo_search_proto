@@ -1,6 +1,6 @@
 import { buildIndex } from "../src/indexer.js"
 import { evaluatePromo, searchPromos } from "../src/search.js"
-import { THRESHOLD_QUANTITY } from "../src/types.js"
+import { THRESHOLD_QUANTITY, STATUS_REACHED, STATUS_NUDGE, STATUS_SILENT } from "../src/types.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
 
 describe("evaluatePromo", () => {
@@ -9,7 +9,7 @@ describe("evaluatePromo", () => {
     const result = evaluatePromo(cartPromo("p1", 5000), cart)
     expect(result.progress).toBe(1)
     expect(result.gap).toBe(0)
-    expect(result.status).toBe("reached")
+    expect(result.status).toBe(STATUS_REACHED)
   })
 
   it("uses only qualifying SKUs for item_spend promo", () => {
@@ -17,31 +17,31 @@ describe("evaluatePromo", () => {
     const result = evaluatePromo(itemPromo("p1", ["sku-a"], 4000), cart)
     expect(result.progress).toBe(0.5)
     expect(result.gap).toBe(2000)
-    expect(result.status).toBe("silent")
+    expect(result.status).toBe(STATUS_SILENT)
   })
 
   it("status is nudge when progress is between 0.8 and 1", () => {
     const cart = [cartItem("a", 4000)]
     const result = evaluatePromo(cartPromo("p1", 5000), cart)
-    expect(result.status).toBe("nudge")
+    expect(result.status).toBe(STATUS_NUDGE)
   })
 
   it("status is silent when progress is below 0.8", () => {
     const cart = [cartItem("a", 1000)]
     const result = evaluatePromo(cartPromo("p1", 5000), cart)
-    expect(result.status).toBe("silent")
+    expect(result.status).toBe(STATUS_SILENT)
   })
 
   it("uses promo nudge threshold when set", () => {
     const promo = { ...cartPromo("p1", 1000), nudge: 70 }
     const cart = [cartItem("a", 750)]
-    expect(evaluatePromo(promo, cart).status).toBe("nudge")
+    expect(evaluatePromo(promo, cart).status).toBe(STATUS_NUDGE)
   })
 
   it("promo nudge threshold overrides default", () => {
     const promo = { ...cartPromo("p1", 1000), nudge: 90 }
     const cart = [cartItem("a", 850)]
-    expect(evaluatePromo(promo, cart).status).toBe("silent")
+    expect(evaluatePromo(promo, cart).status).toBe(STATUS_SILENT)
   })
 
   it("caps progress at 1 when cart exceeds threshold", () => {
@@ -60,7 +60,7 @@ describe("evaluatePromo", () => {
       const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
       expect(result.progress).toBe(0.5)
       expect(result.gap).toBe(1)
-      expect(result.status).toBe("silent")
+      expect(result.status).toBe(STATUS_SILENT)
     })
 
     it("status is reached when qty meets threshold", () => {
@@ -68,7 +68,7 @@ describe("evaluatePromo", () => {
       const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
       expect(result.progress).toBe(1)
       expect(result.gap).toBe(0)
-      expect(result.status).toBe("reached")
+      expect(result.status).toBe(STATUS_REACHED)
     })
 
     it("only counts SKUs matching the trigger", () => {

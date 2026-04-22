@@ -1,5 +1,5 @@
 import { buildPromoSearch } from "../src/builders.js"
-import { SORT_WEIGHTED } from "../src/types.js"
+import { SORT_WEIGHTED, STATUS_REACHED, STATUS_NUDGE } from "../src/types.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
 
 describe("buildPromoSearch", () => {
@@ -37,8 +37,8 @@ describe("buildPromoSearch", () => {
     const nudge = cartPromo("n", 1200)
     const search = buildPromoSearch([reached, nudge])
     const groups = search([cartItem("a", 1000)])
-    expect(groups.reached.every(r => r.status === "reached")).toBe(true)
-    expect(groups.nudge.every(r => r.status === "nudge")).toBe(true)
+    expect(groups.reached.every(r => r.status === STATUS_REACHED)).toBe(true)
+    expect(groups.nudge.every(r => r.status === STATUS_NUDGE)).toBe(true)
   })
 
   it("reuses the same index across multiple calls", () => {

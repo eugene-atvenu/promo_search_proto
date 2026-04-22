@@ -9,6 +9,13 @@ export const TARGET_CART = "cart" as const
 export const TARGET_SHIPPING = "shipping" as const
 export const TARGET_CHEAPEST = "cheapest" as const
 export const TARGET_MOST_EXPENSIVE = "most_expensive" as const
+export const STATUS_REACHED = "reached" as const
+export const STATUS_NUDGE = "nudge" as const
+export const STATUS_SILENT = "silent" as const
+export const SORT_MAX_GAP = "max_gap" as const
+export const SORT_MIN_GAP = "min_gap" as const
+export const SORT_RANDOM = "random" as const
+export const SORT_WEIGHTED = "weighted" as const
 
 export type Threshold =
   | { type: typeof THRESHOLD_COST; value: number }
@@ -40,7 +47,7 @@ export type CartItem = {
   qty: number;
 };
 
-export type PromoStatus = "reached" | "nudge" | "silent";
+export type PromoStatus = typeof STATUS_REACHED | typeof STATUS_NUDGE | typeof STATUS_SILENT;
 
 export type PromoResult = {
   promo: Promo;
@@ -48,11 +55,6 @@ export type PromoResult = {
   progress: number;
   gap: number;
 };
-
-export const SORT_MAX_GAP = "max_gap" as const
-export const SORT_MIN_GAP = "min_gap" as const
-export const SORT_RANDOM = "random" as const
-export const SORT_WEIGHTED = "weighted" as const
 
 export type SortAlgorithm = typeof SORT_MAX_GAP | typeof SORT_MIN_GAP | typeof SORT_RANDOM | typeof SORT_WEIGHTED;
 

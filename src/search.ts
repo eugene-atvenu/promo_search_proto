@@ -1,5 +1,5 @@
 import type { PromoIndex } from "./indexer.js"
-import { TRIGGER_CART_SPEND, THRESHOLD_QUANTITY } from "./types.js"
+import { TRIGGER_CART_SPEND, THRESHOLD_QUANTITY, STATUS_REACHED, STATUS_NUDGE, STATUS_SILENT } from "./types.js"
 import type { Promo, CartItem, PromoStatus, PromoResult } from "./types.js"
 import { cartTotal, qualifyingTotal, qualifyingQty, evaluateThreshold } from "./search.helpers.js"
 
@@ -12,8 +12,8 @@ export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult 
   if (promo.trigger.type === TRIGGER_CART_SPEND) {
     total = cartTotal(cartItems)
   } else {
-    const { skus, threshold } = promo.trigger
-    total = threshold.type === THRESHOLD_QUANTITY
+    const { skus } = promo.trigger
+    total = promo.trigger.threshold.type === THRESHOLD_QUANTITY
       ? qualifyingQty(cartItems, skus)
       : qualifyingTotal(cartItems, skus)
   }
@@ -25,11 +25,11 @@ export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult 
 
   let status: PromoStatus
   if (progress >= 1) {
-    status = "reached"
+    status = STATUS_REACHED
   } else if (progress >= nudgeMin) {
-    status = "nudge"
+    status = STATUS_NUDGE
   } else {
-    status = "silent"
+    status = STATUS_SILENT
   }
 
   return { promo, status, progress, gap }
@@ -43,6 +43,6 @@ export const searchPromos = (cartItems: CartItem[], index: PromoIndex): PromoRes
 
   return [...matched]
     .map((promoId) => evaluatePromo(index.promoMap.get(promoId)!, cartItems))
-    .filter((result) => result.status !== "silent")
+    .filter((result) => result.status !== STATUS_SILENT)
     .sort((a, b) => b.progress - a.progress)
 }
