@@ -26,7 +26,7 @@ export type Trigger =
   | { type: typeof TRIGGER_CART_SPEND; threshold: Threshold }
   | { type: typeof TRIGGER_ITEM_SPEND; skus: string[]; threshold: Threshold };
 
-export type RewardTarget = typeof TARGET_CART | typeof TARGET_SHIPPING | typeof TARGET_CHEAPEST | typeof TARGET_MOST_EXPENSIVE | string; // string = specific sku
+export type RewardTarget = typeof TARGET_CART | typeof TARGET_SHIPPING | typeof TARGET_CHEAPEST | typeof TARGET_MOST_EXPENSIVE | string | string []; // string = specific sku
 
 export type Reward =
   | { type: typeof REWARD_COST_OFF; value: number; target: typeof TARGET_CART | typeof TARGET_SHIPPING }
