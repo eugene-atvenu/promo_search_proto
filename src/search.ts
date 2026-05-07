@@ -1,24 +1,28 @@
 import type { PromoIndex } from "./indexer.js"
 import { TRIGGER_CART_SPEND, THRESHOLD_QUANTITY, STATUS_REACHED, STATUS_NUDGE, STATUS_SILENT } from "./types.js"
 import type { Promo, CartItem, PromoStatus, PromoResult } from "./types.js"
-import { cartTotal, qualifyingTotal, qualifyingQty, evaluateThreshold } from "./search.helpers.js"
-
-export { cartTotal, evaluateThreshold }
+import {
+  buildCartStats,
+  qualifyingTotalFromStats,
+  qualifyingQtyFromStats,
+  evaluateThresholdFromStats,
+} from "./search.helpers.js"
+import type { CartStats } from "./search.helpers.js"
 
 const NUDGE_MIN_PROGRESS = 0.8
 
-export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult => {
+const _evaluatePromoFromStats = (promo: Promo, stats: CartStats): PromoResult => {
   let total: number
   if (promo.trigger.type === TRIGGER_CART_SPEND) {
-    total = cartTotal(cartItems)
+    total = stats.total
   } else {
     const { skus } = promo.trigger
     total = promo.trigger.threshold.type === THRESHOLD_QUANTITY
-      ? qualifyingQty(cartItems, skus)
-      : qualifyingTotal(cartItems, skus)
+      ? qualifyingQtyFromStats(stats, skus)
+      : qualifyingTotalFromStats(stats, skus)
   }
 
-  const threshold = evaluateThreshold(promo.trigger.threshold, cartItems)
+  const threshold = evaluateThresholdFromStats(promo.trigger.threshold, stats)
   const progress = Math.min(total / threshold, 1)
   const gap = Math.max(threshold - total, 0)
   const nudgeMin = promo.nudge != null ? promo.nudge / 100 : NUDGE_MIN_PROGRESS
@@ -35,14 +39,24 @@ export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult 
   return { promo, status, progress, gap }
 }
 
-export const searchPromos = (cartItems: CartItem[], index: PromoIndex): PromoResult[] => {
-  const fromItems = cartItems.flatMap(item =>
-    Array.from(index.itemIndex.get(item.sku) ?? [])
-  )
-  const matched = new Set([...index.cartSpend, ...fromItems])
+export const evaluatePromo = (promo: Promo, cartItems: CartItem[]): PromoResult =>
+  _evaluatePromoFromStats(promo, buildCartStats(cartItems))
 
-  return [...matched]
-    .map((promoId) => evaluatePromo(index.promoMap.get(promoId)!, cartItems))
-    .filter((result) => result.status !== STATUS_SILENT)
-    .sort((a, b) => b.progress - a.progress)
+export const searchPromos = (cartItems: CartItem[], index: PromoIndex): PromoResult[] => {
+  const stats = buildCartStats(cartItems)
+
+  const matchedItem = new Set<string>()
+  for (const sku of stats.bySku.keys()) {
+    const ids = index.itemIndex.get(sku)
+    if (ids) for (const id of ids) matchedItem.add(id)
+  }
+
+  const out: PromoResult[] = []
+  const evaluate = (promoId: string) => {
+    const result = _evaluatePromoFromStats(index.promoMap.get(promoId)!, stats)
+    if (result.status !== STATUS_SILENT) out.push(result)
+  }
+  for (const promoId of index.cartSpend) evaluate(promoId)
+  for (const promoId of matchedItem) evaluate(promoId)
+  return out
 }

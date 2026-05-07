@@ -2,6 +2,7 @@ import type { CartItem, Promo, PromoResult } from "../src/index.js"
 import {
   buildIndex,
   buildPromoSorter,
+  buildCartStats,
   groupPromos,
   SORT_MAX_GAP,
   SORT_MIN_GAP,
@@ -67,6 +68,7 @@ const cart: CartItem[] = [
   { sku: "poster-one", price: 1200, qty: 2 },
 ]
 
+const stats = buildCartStats(cart)
 const results = searchPromos(cart, index)
 
 const printResult = ({ promo, status, progress, gap }: PromoResult) => {
@@ -77,10 +79,10 @@ const printResult = ({ promo, status, progress, gap }: PromoResult) => {
 }
 
 console.log("=== min gap — closest to triggering first ===")
-buildPromoSorter(SORT_MIN_GAP, cart)(results).forEach(printResult)
+buildPromoSorter(SORT_MIN_GAP, stats)(results).forEach(printResult)
 
 console.log("\n=== max gap — furthest from triggering first ===")
-buildPromoSorter(SORT_MAX_GAP, cart)(results).forEach(printResult)
+buildPromoSorter(SORT_MAX_GAP, stats)(results).forEach(printResult)
 
 console.log("\n=== weighted — higher weight first ===")
 buildPromoSorter(SORT_WEIGHTED)(results).forEach(printResult)
@@ -89,7 +91,7 @@ console.log("\n=== random — shuffled ===")
 buildPromoSorter(SORT_RANDOM)(results).forEach(printResult)
 
 console.log("\n=== grouped by status (sorted by min gap within each group) ===")
-const { reached, nudge } = groupPromos(buildPromoSorter(SORT_MIN_GAP, cart)(results))
+const { reached, nudge } = groupPromos(buildPromoSorter(SORT_MIN_GAP, stats)(results))
 console.log("  -- reached --")
 reached.forEach(printResult)
 console.log("  -- nudge --")

@@ -1,9 +1,11 @@
 import { evaluatePromo } from "../src/search.js"
 import { buildPromoSorter } from "../src/builders.js"
+import { buildCartStats } from "../src/search.helpers.js"
 import { THRESHOLD_QUANTITY, SORT_MAX_GAP, SORT_MIN_GAP, SORT_RANDOM, SORT_WEIGHTED } from "../src/types.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
 
 const cart = [cartItem("hat", 1000, 1)] // 1 hat @ $10 = $10 total
+const cartStats = buildCartStats(cart)
 
 // p1: needs $50 cart spend → gap = $20
 // p2: needs $40 cart spend → gap = $10
@@ -29,7 +31,7 @@ describe("buildPromoSorter", () => {
       // amount promo: need $15, have $10 → gap = 500 cents = $5
       const amtResult = evaluatePromo(cartPromo("amt", 1500), cart)
 
-      const sorted = buildPromoSorter(SORT_MIN_GAP, cart)([qtyResult, amtResult])
+      const sorted = buildPromoSorter(SORT_MIN_GAP, cartStats)([qtyResult, amtResult])
       expect(sorted[0]!.promo.id).toBe("amt") // $5 gap
       expect(sorted[1]!.promo.id).toBe("qty") // $20 gap
     })
@@ -41,7 +43,7 @@ describe("buildPromoSorter", () => {
       // cart promo gap = 500 cents ($5)
       const cartAmtResult = evaluatePromo(cartPromo("cart-amt", 1500), cart)
 
-      const sorted = buildPromoSorter(SORT_MIN_GAP, cart)([itemAmtResult, cartAmtResult])
+      const sorted = buildPromoSorter(SORT_MIN_GAP, cartStats)([itemAmtResult, cartAmtResult])
       expect(sorted[0]!.promo.id).toBe("cart-amt") // $5 gap
       expect(sorted[1]!.promo.id).toBe("item-amt") // $10 gap
     })
@@ -52,7 +54,7 @@ describe("buildPromoSorter", () => {
       // cart promo gap = 200 cents — larger than raw gap of 3
       const cartAmtResult = evaluatePromo(cartPromo("cart-amt", 1200), cart)
 
-      const sorted = buildPromoSorter(SORT_MIN_GAP, cart)([cartAmtResult, qtyResult])
+      const sorted = buildPromoSorter(SORT_MIN_GAP, cartStats)([cartAmtResult, qtyResult])
       expect(sorted[0]!.promo.id).toBe("no-match") // gap = 3 (raw, no conversion)
       expect(sorted[1]!.promo.id).toBe("cart-amt") // gap = 200
     })
@@ -75,7 +77,7 @@ describe("buildPromoSorter", () => {
       const qtyResult = evaluatePromo(itemPromo("qty", ["hat"], 3, THRESHOLD_QUANTITY), cart)
       const amtResult = evaluatePromo(cartPromo("amt", 1500), cart)
 
-      const sorted = buildPromoSorter(SORT_MAX_GAP, cart)([qtyResult, amtResult])
+      const sorted = buildPromoSorter(SORT_MAX_GAP, cartStats)([qtyResult, amtResult])
       expect(sorted[0]!.promo.id).toBe("qty") // $20 gap
       expect(sorted[1]!.promo.id).toBe("amt") // $5 gap
     })

@@ -1,6 +1,6 @@
 import { buildIndex } from "../src/indexer.js"
 import { evaluatePromo, searchPromos } from "../src/search.js"
-import { THRESHOLD_QUANTITY, STATUS_REACHED, STATUS_NUDGE, STATUS_SILENT } from "../src/types.js"
+import { THRESHOLD_PERCENT, THRESHOLD_QUANTITY, STATUS_REACHED, STATUS_NUDGE, STATUS_SILENT } from "../src/types.js"
 import { cartItem, cartPromo, itemPromo } from "./stubs.js"
 
 describe("evaluatePromo", () => {
@@ -82,6 +82,26 @@ describe("evaluatePromo", () => {
       const result = evaluatePromo(qtyPromo("p1", ["hat"], 2), cart)
       expect(result.progress).toBe(1)
     })
+
+    it("ignores promo SKUs not present in cart", () => {
+      const cart = [cartItem("hat", 1800, 2)]
+      const result = evaluatePromo(qtyPromo("p1", ["hat", "tee"], 2), cart)
+      expect(result.progress).toBe(1)
+    })
+  })
+
+  it("handles empty cart", () => {
+    const result = evaluatePromo(cartPromo("p1", 1000), [])
+    expect(result.progress).toBe(0)
+    expect(result.gap).toBe(1000)
+    expect(result.status).toBe(STATUS_SILENT)
+  })
+
+  it("supports percent threshold against full cart total", () => {
+    const promo = cartPromo("p1", 50, THRESHOLD_PERCENT)
+    const result = evaluatePromo(promo, [cartItem("a", 1000, 2)])
+    expect(result.progress).toBe(1)
+    expect(result.status).toBe(STATUS_REACHED)
   })
 })
 
@@ -121,13 +141,13 @@ describe("searchPromos", () => {
     expect(results).toHaveLength(1)
   })
 
-  it("sorts results by progress descending", () => {
+  it("returns all non-silent matches in unspecified order", () => {
     const high = cartPromo("high", 1000)
     const low = { ...cartPromo("low", 2000), nudge: 40 }
     const index = buildIndex([low, high])
     const cart = [cartItem("a", 900)]
     const results = searchPromos(cart, index)
-    expect(results[0]!.promo).toBe(high)
-    expect(results[1]!.promo).toBe(low)
+    expect(results).toHaveLength(2)
+    expect(results.map((r) => r.promo)).toEqual(expect.arrayContaining([high, low]))
   })
 })
